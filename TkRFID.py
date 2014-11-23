@@ -27,8 +27,9 @@ from Phidgets.Devices.AdvancedServo import AdvancedServo
 # Define GUI parameters___________________________________________________
 mywindow = Tkinter.Tk()
 mywindow.geometry("300x250")
-mywindow.title("Phidget Tester")
+mywindow.title("RFID Phidget Tester")
 label_rfidTag = Tkinter.Label(mywindow, text = "RFID Tag: ")
+label_LockedStatus = Tkinter.Label(mywindow, text = "LOCKED")
 
 
 # Define global variables_________________________________________________
@@ -38,6 +39,8 @@ safeTag = "4742006"
 lastTag = ""
 servoLocked=Tkinter.IntVar()
 servoLocked.set(1)
+antennaOn = Tkinter.IntVar()
+antennaOn.set(0)
 
 
 # Event Handler Callback Functions________________________________________
@@ -146,6 +149,7 @@ def unlockDevice():
 	except PhidgetException as e:
 		print("Phidget Exception %i: %s" % (e.code, e.details))
 	servoLocked.set(0)
+	label_LockedStatus.configure(text="UNLOCKED")
 
 
 def lockDevice():
@@ -156,6 +160,15 @@ def lockDevice():
 	except PhidgetException as e:
 		print("Phidget Exception %i: %s" % (e.code, e.details))
 	servoLocked.set(1)
+	label_LockedStatus.configure(text="LOCKED")
+
+def toggleAntenna():
+	global antennaOn
+	rfid.setAntennaOn(antennaOn.get())
+	if antennaOn.get():
+		print("Antenna turned on.")
+	else:
+		print("Antenna turned off.")
 
 
 # Create and Initialize AdvancedServo object__________________________
@@ -229,20 +242,25 @@ except PhidgetException as e:
 
 print("Turning on the RFID antenna....")
 rfid.setAntennaOn(True)
+antennaOn.set(1)
 print("System setup complete.  Ready to read RFID tags.")
 
 
 # Main Loop__________________________________________________
 def main():
-    statusDumpButton = Tkinter.Button(mywindow, text="Send Status", command=statusDump)
-    statusDumpButton.place(x=5, y= 200)
+	antennaOnCheckbox = Tkinter.Checkbutton(text="Antenna On", command=toggleAntenna, variable=antennaOn, onvalue=1, offvalue=0)
+	antennaOnCheckbox.place(x=200, y=5)
 
-    exitButton = Tkinter.Button(mywindow, text="Exit", command=exitProgram)
-    exitButton.place(x=235, y= 200)
+	statusDumpButton = Tkinter.Button(mywindow, text="Send Status", command=statusDump)
+	statusDumpButton.place(x=5, y= 200)
 
-    label_rfidTag.place(x=25, y=120)
-                            
-    mywindow.mainloop()
+	exitButton = Tkinter.Button(mywindow, text="Exit", command=exitProgram)
+	exitButton.place(x=235, y= 200)
+
+	label_rfidTag.place(x=25, y=120)
+	label_LockedStatus.place(x=120, y=90)
+
+	mywindow.mainloop()
 
 if __name__ == '__main__':
     main()
